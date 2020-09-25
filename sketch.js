@@ -1,77 +1,113 @@
 const Engine = Matter.Engine;
 const World = Matter.World;
-const Body = Matter.Body;
 const Bodies = Matter.Bodies;
-const Constraint = Matter.Constraint;
+const Body = Matter.Body;
 
+var tree, treeImage;
 var ground;
+var stone, stoneImage;
+var boyImage;
+var mango1, mango2, mango3, mango4, mangoImage;
+var constraint;
 
-var particles = [];
-var divisions = [];
-var plinkos = [];
-
-var divisionHeight = 300;
+function preload()
+{
+	treeImage = loadImage("tree.png");
+	stoneImage = loadImage("stone.png");
+	boyImage = loadImage("boy.png");
+	mangoImage = loadImage("mango.png");
+}
 
 function setup() {
-  createCanvas(480,800);
+	createCanvas(800, 700);
 
-  engine = Engine.create();
-  world = engine.world;
 
-  ground = new Ground();
+	engine = Engine.create();
+	world = engine.world;
 
-  for (var k = 0; k <= width; k = k + 80){
+	//Create the Bodies Here.
 
-    divisions.push(new Division(k, height - divisionHeight/2, 10, divisionHeight));
-  }
-  
-  for (var j = 40; j <= width; j = j + 50){
-  
-    plinkos.push(new Plinko(j, 75));
-  }
-  
-  for (var j = 15; j <= width; j = j + 50){
-  
-    plinkos.push(new Plinko(j, 175));
-  }
-  
-  for (var j = 40; j <= width; j = j + 50){
-  
-    plinkos.push(new Plinko(j, 275));
-  }
-  
-  for (var j = 15; j <= width; j = j + 50){
-  
-    plinkos.push(new Plinko(j, 375));
-  }
+	ground = new Ground();
+
+	stone = new Stone(105, 560);
+
+	mango1 = new Mango(220, 130, 50);
+	mango2 = new Mango(200, 1, 50);
+	mango3 = new Mango(180, 30, 50);
+	mango4 = new Mango(200, 50, 50);
+
+	constraint = new Constraint(stone.body, {x:105, y:560});
+
+	Engine.run(engine);
   
 }
 
+
 function draw() {
-  background(0); 
+  rectMode(CENTER);
+  background(0);
 
-  if(frameCount%90 === 0){
-    particles.push(new Particle(random(width/2 - 10, width/2 + 10), 10, 10));
-  }
-
-  Engine.update(engine);
-  
   ground.display();
 
-  for (var j = 0; j < particles.length; j++){
+  image(boyImage, 180, 625, 250, 250);
 
-    particles[j].display();
+  image(treeImage, 600, 350, 600, 700);
+
+  stone.display();
+
+  mango1.display();
+  mango2.display();
+  mango3.display();
+  mango4.display();
+
+  if (detectCollision(stone.body, mango1.body)){
+
+	Body.setStatic(mango1.body, false);
   }
 
-  for (var k = 0; k < plinkos.length; k++){
+  if (detectCollision(stone.body, mango2.body)){
 
-    plinkos[k].display();
+	Body.setStatic(mango2.body, false);
   }
 
-  for (var l = 0; l < divisions.length; l++){
+  if (detectCollision(stone.body, mango3.body)){
 
-    divisions[l].display();
+	Body.setStatic(mango3.body, false);
   }
 
+  if (detectCollision(stone.body, mango4.body)){
+
+	Body.setStatic(mango4.body, false);
+  }
+  
   drawSprites();
+}
+
+function mouseDragged(){
+
+	Body.setPosition(stone.body, {x:mouseX, y:mouseY});
+}
+
+function mouseReleased(){
+
+	constraint.fly();
+}
+
+function keyPressed(){
+
+	if(keyCode === 32){
+
+		constraint.attach(stone.body);
+	}
+}
+
+function detectCollision(body1, body2){
+
+    if(body1.position.x - body2.position.x <= body1.width/2 + body2.width/2 || 
+       body2.position.x - body1.position.x <= body1.width/2 + body2.width/2 ||
+       body1.position.y  - body2.position.y <= body1.height/2 + body2.height/2 ||
+       body2.position.y - body1.position.y <= body1.height/2 + body2.height/2){
+
+        return true;
+       }
 }
